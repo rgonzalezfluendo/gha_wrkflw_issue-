@@ -1,3 +1,5 @@
+name: Test
+
 on:
   push:
 
@@ -10,6 +12,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install deps
+        run: sudo apt-get update && sudo apt-get install -y python3
       - name: Generate matrix
         id: build_matrix
         run: |
@@ -40,6 +44,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+      - name: Install deps
+        if: ${{ inputs.runner == 'ubuntu-latest' }}
+        run: sudo apt-get update && sudo apt-get install -y npm
       - if: ${{ matrix.npm }}
         run: npm install -g npm@${{ matrix.npm }}
       - run: npm --version
