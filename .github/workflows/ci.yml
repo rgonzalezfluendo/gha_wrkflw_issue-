@@ -35,10 +35,7 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
         node: [14, 16]
-        include:
-          - os: windows-latest
-            node: 16
-            npm: 6
+        include: ${{ fromJSON(needs.setup-orchestrator.outputs.build_matrix) }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/setup-node@v4
