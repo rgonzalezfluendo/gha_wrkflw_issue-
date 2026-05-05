@@ -1,0 +1,45 @@
+on:
+  push:
+
+jobs:
+  setup-orchestrator:
+    runs-on: ubuntu-slim
+    outputs:
+      build_matrix: ${{ steps.build_matrix.outputs.build_matrix }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Generate matrix
+        id: build_matrix
+        run: |
+          build_matrix=$(python3 list.py)
+
+          echo "::group::Full matrix for '$codecs_to_build'"
+          echo "$build_matrix" | jq '.'
+          echo "::endgroup::"
+
+          # Outputs
+          {
+            echo "build_matrix=$build_matrix"
+          } >> "$GITHUB_OUTPUT"
+
+
+  example_matrix:
+    needs: setup-orchestrator
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        node: [14, 16]
+        include:
+          - os: windows-latest
+            node: 16
+            npm: 6
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - if: ${{ matrix.npm }}
+        run: npm install -g npm@${{ matrix.npm }}
+      - run: npm --version
